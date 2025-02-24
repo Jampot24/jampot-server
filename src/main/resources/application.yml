@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: jampot
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: MySQL8
+
+  profiles:
+    include:
+      - rds
