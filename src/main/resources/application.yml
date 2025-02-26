@@ -13,3 +13,16 @@ spring:
   profiles:
     include:
       - rds
+      - oauth2
+
+  jwt:
+    secret: ${JWT_SECRET}
+
+
+cookie:
+  secure: ${COOKIE_SECURE}
+
+swagger:
+  authorizationUrl: ${SWAGGER_AUTHORIZATION_URL}
+  tokenUrl: ${SWAGGER_TOKEN_URL}
+
