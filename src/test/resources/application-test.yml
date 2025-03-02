@@ -8,10 +8,6 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
 
     profiles:
-      include:
-        - rds
-        - oauth2
-
       jwt:
         secret: aa
 
