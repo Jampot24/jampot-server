@@ -5,39 +5,45 @@ spring:
     username: sa
     password: sa
   jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
     database-platform: org.hibernate.dialect.H2Dialect
 
-    profiles:
-      jwt:
-        secret: aa
+
+  jwt:
+    secret: aa
 
 
-    security:
-      oauth2:
-        client:
-          registration:
-            google:
-              client-name: google
-              client-id: aa
-              client-secret: aa
-              redirect-uri: aa
-              authorization-grant-type: authorization_code
-              scope: email
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-name: google
+            client-id: aa
+            client-secret: aa
+            redirect-uri: aa
+            authorization-grant-type: authorization_code
+            scope: email
 
-            kakao:
-              client-name: kakao
-              client-id: aa
-              client-secret: aa
-              redirect-uri: aa
-              authorization-grant-type: authorization_code
-              scope: account_email
+          kakao:
+            client-name: kakao
+            client-id: aa
+            client-secret: aa
+            redirect-uri: aa
+            authorization-grant-type: authorization_code
+            scope: account_email
 
-          provider:
-            kakao:
-              authorization-uri: https://kauth.kakao.com/oauth/authorize
-              token-uri: https://kauth.kakao.com/oauth/token
-              user-info-uri: https://kapi.kakao.com/v2/user/me
-              user-name-attribute: id
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 cookie:
   secure: false
