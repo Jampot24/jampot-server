@@ -41,14 +41,15 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
 
         String accessToken = jwtUtil.createJwt(name, role);
-        String refreshToken = jwtUtil.createJwt(name, role);
+        String refreshToken = jwtUtil.createRefreshToken(name);
 
         response.addCookie(createCookie("Authorization", accessToken, 60 * 60 * 5)); //5시간
         response.addCookie(createCookie("RefreshToken", refreshToken,  60 * 60 * 24 * 7)); //5일
 
         response.setHeader("isNewUser", isNewUser.toString()); //신규 회원 여부
         response.setHeader("name", name.toString());
-        response.sendRedirect("http://localhost:5173"); //프론트에 jwt 반환
+
+        response.sendRedirect("https://localhost:5173");
     }
 
     private Cookie createCookie(String key, String value, int maxAge) {
@@ -57,6 +58,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         cookie.setSecure(loginProperties.getCookieSecure());
         cookie.setPath("/");
         cookie.setHttpOnly(true);
+        //cookie.setAttribute("SameSite", "Lax");
         return cookie;
     }
 }

@@ -63,9 +63,9 @@ public class JWTUtil {
     }
 
     // 리프레시 토큰 생성
-    public String createRefreshToken(String providerId) {
+    public String createRefreshToken(String providerAndId) {
         return Jwts.builder()
-                .subject(providerId)
+                .subject(providerAndId)
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(secretKey)
                 .compact();
