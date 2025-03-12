@@ -24,7 +24,7 @@ public class JWTUtil {
     }
     public String getProviderAndId(String token){
         try{
-            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("providerAndId", String.class);
+            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getSubject();
         }catch(Exception e){
             throw new RuntimeException("Invalid JWT token: " + e.getMessage());
         }
@@ -50,12 +50,9 @@ public class JWTUtil {
     }
 
     public String createJwt(String providerAndId, String role){
-        if(accessTokenExpiration <= 0){
-            throw new IllegalStateException("Expiration time must be greater than 0");
-        }
         return Jwts.builder()
-                .claim("providerAndId", providerAndId) //provider_provider_ID
-                .claim("role", role)
+                .subject(providerAndId) //provider_provider_ID
+                .claim("role", "ROLE_" + role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(secretKey)
@@ -63,9 +60,10 @@ public class JWTUtil {
     }
 
     // 리프레시 토큰 생성
-    public String createRefreshToken(String providerAndId) {
+    public String createRefreshToken(String providerAndId, String role) {
         return Jwts.builder()
                 .subject(providerAndId)
+                .claim("role", "ROLE_" + role)
                 .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
                 .signWith(secretKey)
                 .compact();

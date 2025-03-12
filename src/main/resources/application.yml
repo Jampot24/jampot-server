@@ -27,3 +27,11 @@ swagger:
   authorizationUrl: ${SWAGGER_AUTHORIZATION_URL}
   tokenUrl: ${SWAGGER_TOKEN_URL}
 
+logging:
+  level:
+    org.springframework.web: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.oauth2.client: DEBUG
+    org.springframework.security.oauth2.core: DEBUG
+    org.springframework.security.web.authentication: DEBUG

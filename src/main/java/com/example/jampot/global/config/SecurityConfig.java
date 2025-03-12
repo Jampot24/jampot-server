@@ -38,7 +38,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer ignoringCustomizer() {
         return (web) -> web
                 .ignoring()
-                .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/" );
+                .requestMatchers("/swagger-ui/**","/v3/api-docs/**","/");
     }
 
     @Bean
@@ -85,8 +85,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/oauth2/**","/login/**").permitAll()
-                        .requestMatchers("/my/**","/api/join/complete").hasAnyRole( "USER")
+                        .requestMatchers("/oauth2/**","/login/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/user/join").hasRole("GUEST")//jwt claim의 role 값과 비교
+                        .requestMatchers("/my/**").hasRole( "USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

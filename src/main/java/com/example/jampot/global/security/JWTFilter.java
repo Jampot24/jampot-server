@@ -8,6 +8,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,15 +18,29 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 public class JWTFilter extends OncePerRequestFilter {
-
+    private static  final Logger logger = LoggerFactory.getLogger(JWTFilter.class);
     private final JWTUtil jwtUtil;
 
     public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        // 특정 경로에서는 JWT 검증을 건너뜀
+        String requestURI = request.getRequestURI();
+        logger.info("requestURI:{}",requestURI);
+
+        if (requestURI.startsWith("/oauth2") || requestURI.startsWith("/login") || requestURI.startsWith("/favicon.ico")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        logger.info("jwtFilter 실행");
+
         String accessToken = null;
         String refreshToken = null;
 
@@ -33,27 +49,18 @@ public class JWTFilter extends OncePerRequestFilter {
         if(cookies != null) {
             for (Cookie cookie : cookies) {
                 System.out.println(cookie.getName());//getName(): 쿠키의 key 반환
-                if (cookie.getName().equals("Authorization")) {
+                if (cookie.getName().equals("AccessToken")) {
                     accessToken = cookie.getValue();
-                }else if("RefreshToken".equals(cookie.getName())) {
+                }else if(cookie.getName().equals("RefreshToken")) {
                     refreshToken = cookie.getValue();
                 }
             }
         }
-        //Authorization 헤더 검증
-        if (accessToken == null){
-            System.out.println("AccessToken null");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Access token is missing. Please log in.");
-            return;
-        }
+
 
         //AccessToken이 만료되었는지 확인
         if(jwtUtil.isExpired(accessToken)){
             System.out.println("token expired");
-
-            // 액세스 토큰이 만료되었으면 리프레시 토큰을 사용하여 새 토큰 발급
-            refreshToken = getRefreshTokenFromRequest(request);
 
             // 리프레시 토큰도 없는 경우 에러 응답
             if (refreshToken == null || !jwtUtil.isValid(refreshToken)) {
@@ -61,25 +68,18 @@ public class JWTFilter extends OncePerRequestFilter {
                 response.getWriter().write("Token expired and no valid refresh token found. Please log in again.");
                 return;
         }
-            // 리프레시 토큰이 유효한 경우 새로운 액세스 토큰 발급
-            String providerAndId = jwtUtil.getProviderAndId(refreshToken); // refresh token에서 사용자 정보 추출
-            String role = jwtUtil.getRole(refreshToken);
+            // 액세스 토큰이 만료되었으면 리프레시 토큰을 사용하여 새 토큰 발급
+            accessToken = getAccessTokenFromRefresh(refreshToken);
 
-            // 새로운 액세스 토큰 생성
-            String newAccessToken = jwtUtil.createJwt(providerAndId, role);
-            String newRefreshToken = jwtUtil.createJwt(providerAndId, role);
 
             // 새로운 액세스 토큰을 쿠키에 담아서 클라이언트에 전달
-            Cookie newAccessTokenCookie = new Cookie("Authorization", newAccessToken);
+            Cookie newAccessTokenCookie = new Cookie("AccessToken", accessToken);
             newAccessTokenCookie.setHttpOnly(true);
             newAccessTokenCookie.setPath("/");
             newAccessTokenCookie.setMaxAge(60 * 30); // 30분
             response.addCookie(newAccessTokenCookie);
-
-
-            // 이제 새로운 토큰으로 계속 진행 (아래 인증 로직 진행)
-            accessToken = newAccessToken;
         }
+
 
         // 토큰이 유효한 경우, 사용자 정보 추출 및 SecurityContext에 설정
         String providerAndId = jwtUtil.getProviderAndId(accessToken);
@@ -95,26 +95,26 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+
         //세션에 사용자 정보 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
 
-
-    // 리프레시 토큰을 요청에서 추출하는 메서드
-    private String getRefreshTokenFromRequest(HttpServletRequest request) {
-        String refreshToken = null;
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("RefreshToken")) {
-                    refreshToken = cookie.getValue();
-                }
-            }
+    private String getAccessTokenFromRefresh(String refreshToken) {
+        // Refresh Token 검증
+        if (!jwtUtil.isValid(refreshToken)) {
+            throw new RuntimeException("Invalid Refresh Token");
         }
 
-        return refreshToken;
+        // Refresh Token에서 사용자 정보 추출
+        String providerAndId = jwtUtil.getProviderAndId(refreshToken);
+        String role = jwtUtil.getRole(refreshToken);
+
+        // 새로운 Access Token 생성
+        return jwtUtil.createJwt(providerAndId, role);
     }
+
+
 }

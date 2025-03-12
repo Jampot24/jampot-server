@@ -7,17 +7,22 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.http.HttpHeaders;
 import java.util.Collection;
 import java.util.Iterator;
 
+
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    private static final Logger logger = LoggerFactory.getLogger(CustomSuccessHandler.class);
     private final JWTUtil jwtUtil;
     private final LoginProperties loginProperties;
 
@@ -28,7 +33,11 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        logger.info("onAuthenticationSuccess 실행");
+        String requestURI = request.getRequestURI();
+        logger.info("requestURI:{}",requestURI);
 
+        logger.info("successHandler 시작");
         //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -40,15 +49,17 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
+        logger.info("successHandler - jwt 생성");
         String accessToken = jwtUtil.createJwt(name, role);
-        String refreshToken = jwtUtil.createRefreshToken(name);
+        String refreshToken = jwtUtil.createRefreshToken(name, role);
 
-        response.addCookie(createCookie("Authorization", accessToken, 60 * 60 * 5)); //5시간
+        response.addCookie(createCookie("AccessToken", accessToken, 60 * 60 * 5)); //5시간
         response.addCookie(createCookie("RefreshToken", refreshToken,  60 * 60 * 24 * 7)); //5일
 
         response.setHeader("isNewUser", isNewUser.toString()); //신규 회원 여부
-        response.setHeader("name", name.toString());
 
+
+        //TODO(로그인 완료 후 리다이렉트 주소 수정)
         response.sendRedirect("https://localhost:5173");
     }
 
