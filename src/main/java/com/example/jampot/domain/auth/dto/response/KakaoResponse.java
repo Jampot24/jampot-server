@@ -24,19 +24,12 @@ public class KakaoResponse implements OAuth2Response {
 
     @Override
     public String getProviderId() {
-        try {
-            if (attribute == null || !attribute.containsKey("id_token")) {
-                throw new IllegalArgumentException("Missing 'id_token' attribute");
-            }
-
-            String idToken = attribute.get("id_token").toString();
-            String sub = extractSubFromIdToken(idToken);
-
-            log.info("Extracted sub: {}", sub);
-            return sub;
-        } catch (Exception e) {
-            log.error("Error while getting providerId: ", e);
-            return null;
+        if (attribute.containsKey("id_token")) {
+            return extractSubFromIdToken(attribute.get("id_token").toString());
+        } else if (attribute.containsKey("id")) {
+            return attribute.get("id").toString();  // 'id'를 사용하여 인증
+        } else {
+            throw new IllegalArgumentException("Missing 'id_token' and 'id' attributes");
         }
     }
 

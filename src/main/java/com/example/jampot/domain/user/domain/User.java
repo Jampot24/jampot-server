@@ -24,6 +24,7 @@ public class User extends BaseEntity {
     @Column(name = "users_id")
     private Long id;
     @Column
+    @Enumerated(EnumType.STRING)
     private Provider provider;
     @Column
     private String providerId;
