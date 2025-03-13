@@ -10,7 +10,7 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry){
         corsRegistry.addMapping("/**")
-                .allowedOrigins("*")  // 모든 Origin 허용 (특히 Swagger 테스트용)
+                .allowedOriginPatterns("*")  // 모든 Origin 허용 (특히 Swagger 테스트용)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("Set-Cookie")
