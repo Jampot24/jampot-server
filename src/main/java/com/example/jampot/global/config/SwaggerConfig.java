@@ -77,11 +77,12 @@ public class SwaggerConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("https://jampot.vercel.app/", "https://localhost:5173", "https://localhost:3000", "http://localhost:8080", "https://jampot.co.kr"));
-
+        //configuration.setAllowedOrigins(List.of("https://jampot.vercel.app/", "https://localhost:5173", "https://localhost:3000", "http://localhost:8080", "https://jampot.co.kr"));
+        configuration.addAllowedOriginPattern("*");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
