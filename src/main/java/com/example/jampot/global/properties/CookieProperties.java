@@ -11,7 +11,7 @@ public class CookieProperties {
     @Value("${cookie.secure}")
     private Boolean cookieSecure;
 
-    @Value("${COOKIE_SAMESITE}")
+    @Value("${cookie.samesite}")
     private String cookieSameSite;
 
     @Value("${swagger.authorizationUrl}")
