@@ -52,7 +52,7 @@ spring:
 
 cookie:
   secure: false
-  samesite: "Lax"
+  samesite: Lax
 
 swagger:
   authorizationUrl: aa
@@ -64,5 +64,13 @@ cloud:
       access-key: asdvav
       secret-key: sdagdg
 
+logging:
+  level:
+    org.springframework.web: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.oauth2.client: DEBUG
+    org.springframework.security.oauth2.core: DEBUG
+    org.springframework.security.web.authentication: DEBUG
 
 
