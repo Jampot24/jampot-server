@@ -5,16 +5,16 @@ spring:
         registration:
           google:
             client-name: google
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            client-id: "${GOOGLE_CLIENT_ID}"
+            client-secret: "${GOOGLE_CLIENT_SECRET}"
+            redirect-uri: "${GOOGLE_REDIRECT_URI}"
             authorization-grant-type: authorization_code
             scope: email
 
           kakao:
             client-name: kakao
-            client-id: ${KAKAO_CLIENT_ID}
-            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-id: "${KAKAO_CLIENT_ID}"
+            redirect-uri: "${KAKAO_REDIRECT_URI}"
             authorization-grant-type: authorization_code
             scope: account_email
 

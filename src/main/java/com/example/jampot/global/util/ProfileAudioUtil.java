@@ -10,11 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Component
 @RequiredArgsConstructor
 public class ProfileAudioUtil {
-    /*
     private final AmazonS3Client amazonS3Client;
 
-    private static final String bucket = "";
-    private static final String baseUrl  = "https://s3.amazonaws.com/profile-image/";
+    private static final String bucket = "jampot-s3";
+    private static final String baseUrl  = "https://jampot-s3.s3.ap-northeast-2.amazonaws.com/profile-audio/";
 
     public String uploadAudioFile(MultipartFile file, String fileName)throws Exception{
         System.out.println(fileName);
@@ -23,9 +22,7 @@ public class ProfileAudioUtil {
         metadata.setContentType(file.getContentType());
         metadata.setContentLength(file.getSize());
 
-        amazonS3Client.putObject(bucket, "profile-image/" + fileName, file.getInputStream(), metadata);
+        amazonS3Client.putObject(bucket, "profile-audio/" + fileName, file.getInputStream(), metadata);
         return baseUrl + fileName;
     }
-    */
-
 }

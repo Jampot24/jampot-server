@@ -15,17 +15,19 @@ spring:
     include:
       - rds
       - oauth2
+      - s3
 
   jwt:
-    secret: ${JWT_SECRET}
+    secret: "${JWT_SECRET}"
 
 
 cookie:
-  secure: ${COOKIE_SECURE}
+  secure: "${COOKIE_SECURE}"
+  samesite: "${COOKIE_SAMESITE}"
 
 swagger:
-  authorizationUrl: ${SWAGGER_AUTHORIZATION_URL}
-  tokenUrl: ${SWAGGER_TOKEN_URL}
+  authorizationUrl: "${SWAGGER_AUTHORIZATION_URL}"
+  tokenUrl: "${SWAGGER_TOKEN_URL}"
 
 logging:
   level:

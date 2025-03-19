@@ -8,9 +8,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Getter
+@RequiredArgsConstructor
 public class UserSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -56,7 +56,7 @@ public class SecurityConfig {
                         configuration.setAllowCredentials(true);
                         configuration.setMaxAge(3600L);
 
-                        configuration.setAllowedHeaders(Collections.singletonList("Authorization, Set-Cookie"));
+                        //configuration.setAllowedHeaders(Collections.singletonList("Authorization, Set-Cookie"));
 
                         return configuration;
                     }
@@ -85,9 +85,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/oauth2/**","/login/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/oauth2/**","/login/**").permitAll()
                         .requestMatchers("/user/join").hasRole("GUEST")//jwt claim의 role 값과 비교
-                        .requestMatchers("/my/**").hasRole( "USER")
+                        .requestMatchers("/user/**").hasRole( "USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

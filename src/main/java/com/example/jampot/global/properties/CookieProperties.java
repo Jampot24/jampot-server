@@ -7,14 +7,16 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Component
-public class LoginProperties {
+public class CookieProperties {
     @Value("${cookie.secure}")
     private Boolean cookieSecure;
+
+    @Value("${COOKIE_SAMESITE}")
+    private String cookieSameSite;
 
     @Value("${swagger.authorizationUrl}")
     private String swaggerAuthorizationUrl;
 
     @Value("${swagger.tokenUrl}")
     private String swaggerTokenUrl;
-
 }

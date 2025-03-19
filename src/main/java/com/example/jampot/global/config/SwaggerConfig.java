@@ -1,8 +1,6 @@
 package com.example.jampot.global.config;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
-import com.example.jampot.global.properties.LoginProperties;
+import com.example.jampot.global.properties.CookieProperties;
 import io.swagger.v3.oas.models.security.OAuthFlow;
 import io.swagger.v3.oas.models.security.OAuthFlows;
 import org.springframework.context.annotation.Bean;
@@ -20,14 +18,14 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
-    private LoginProperties loginProperties;
+    private CookieProperties loginProperties;
 
     private static final String COOKIE_AUTH_NAME = "Authorization"; // JWT 쿠키 이름
     private static final String OAUTH2_GOOGLE = "oauth2-google"; // OAuth2 인증 스키마 이름
     private  static final String OAUTH2_KAKAO =  "oauth2-kakao";
 
 
-    public SwaggerConfig(LoginProperties loginProperties) {
+    public SwaggerConfig(CookieProperties loginProperties) {
         this.loginProperties = loginProperties;
     }
 

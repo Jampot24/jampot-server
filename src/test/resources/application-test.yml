@@ -47,7 +47,14 @@ spring:
 
 cookie:
   secure: false
+  samesite: "Lax"
 
 swagger:
   authorizationUrl: aa
   tokenUrl: aa
+
+cloud:
+  aws:
+    credentials:
+      access-key: asdvav
+      secret-key: sdagdg

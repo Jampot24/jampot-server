@@ -11,11 +11,14 @@ import com.example.jampot.domain.user.dto.request.MypageEditRequest;
 import com.example.jampot.domain.user.dto.request.UserJoinRequest;
 import com.example.jampot.domain.user.domain.User;
 import com.example.jampot.domain.user.dto.response.MypageResponse;
+import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
+import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
 import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.domain.user.vo.Provider;
 import com.example.jampot.global.util.AuthUtil;
 import com.example.jampot.global.util.JWTUtil;
-import com.nimbusds.jwt.JWT;
+import com.example.jampot.global.util.ProfileAudioUtil;
+import com.example.jampot.global.util.ProfileImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.String.valueOf;
 
@@ -44,12 +48,13 @@ public class UserService {
     private final SessionRepository sessionRepository;
     private final JWTUtil jwtUtil;
     private final AuthUtil authUtil;
+    private final ProfileImageUtil profileImageUtil;
+    private final ProfileAudioUtil profileAudioUtil;
 
     private static Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Transactional
     public List<String> joinUser( UserJoinRequest userJoinRequest){
-        logger.info("joinUser");
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         String[] parts = providerAndId.split("_");
         Provider provider = Provider.fromString(valueOf(parts[0]));
@@ -59,10 +64,14 @@ public class UserService {
             throw new IllegalStateException("이미 가입된 회원입니다");
         }
 
+        if(!userJoinRequest.nickname().isEmpty() && userRepository.findByNickName(userJoinRequest.nickname()).isPresent()){
+            throw new IllegalStateException("이미 사용중인 닉네임입니다.");
+        }
+
         List<Session> selectedSessions = sessionRepository.findByNameIn(userJoinRequest.sessionList());
         List<Genre> selectedGenres = genreRepository.findByNameIn(userJoinRequest.genreList());
 
-        //TODO(user builder 서비스에 작성)
+
         //신규 가입 회원 저장
         User newUser = User.createUser(provider, providerId, Role.USER, userJoinRequest.nickname(),
                                         selectedSessions, selectedGenres, userJoinRequest.isPublic());
@@ -91,7 +100,7 @@ public class UserService {
 
         return jwts;
     }
-
+    @Transactional
     public MypageResponse getUserMypageInfo() {
         User user = authUtil.getLoggedInUser();
 
@@ -106,26 +115,65 @@ public class UserService {
     }
 
 
-    /*
 
-    //TODO(마이페이지 수정)
+    @Transactional
     public void editMypageInfo(MypageEditRequest mypageEditRequest){
+
+        User loggedInUser = authUtil.getLoggedInUser();
+
+        if(mypageEditRequest.nickName() != null){
+            Optional<User> extistingUser = userRepository.findByNickName(mypageEditRequest.nickName());
+
+            if(extistingUser.isPresent() && !extistingUser.get().equals(loggedInUser)){
+                throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
+            }
+        }
+
         // 새로운 장르 추가
         List<Genre> selectedGenres = genreRepository.findByNameIn(mypageEditRequest.genreList());
+        List<Session> selectedSessions = sessionRepository.findByNameIn(mypageEditRequest.sessionList());
+
+        //TODO(캘린더 연동)
+
+        loggedInUser.updateUser(
+                mypageEditRequest.nickName(),
+                mypageEditRequest.selfIntroduction(),
+                selectedSessions,
+                selectedGenres,
+                mypageEditRequest.profileImageUrl(),
+                mypageEditRequest.profileAudioUrl(),
+                mypageEditRequest.calenderServiceAgreement(),  // 캘린더 동의는 따로 받지 않으므로 null 유지
+                mypageEditRequest.isPublic()
+        );
 
     }
-    //TODO(파일 s3에 업로드)
-    public Object uploadProfileImage(MultipartFile file, String providerAndId) {
-        try{
-            String fileName = generateProfileImageFileName(providerAndId);
-            String profileImageUrl = file.getOriginalFilename();
+    @Transactional
+    public UserProfileImgUploadResponse uploadProfileImage(MultipartFile file) throws Exception {
+        String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            String fileName = generateProfileFileName(providerAndId);
+            String profileImageUrl = profileImageUtil.uploadImageFile(file, fileName);
+            return new UserProfileImgUploadResponse(profileImageUrl);
+        }catch (Exception e){
+            throw new RuntimeException();
         }
     }
 
-     */
+    @Transactional
+    public UserProfileAudioUploadResponse uploadProfileAudio(MultipartFile file) {
+        String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
+        try{
+            String fileName = generateProfileFileName(providerAndId);
+            String profileImageUrl = profileAudioUtil.uploadAudioFile(file, fileName);
+            return new UserProfileAudioUploadResponse(profileImageUrl);
+        }catch (Exception e){
+            throw  new RuntimeException();
+        }
+    }
 
 
-    private String generateProfileImageFileName(String providerAndId) {
+
+    private String generateProfileFileName(String providerAndId) {
         try{
             var md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(providerAndId.getBytes(StandardCharsets.UTF_8));

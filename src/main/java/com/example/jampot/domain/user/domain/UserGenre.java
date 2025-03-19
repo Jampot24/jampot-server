@@ -4,9 +4,11 @@ import com.example.jampot.domain.common.domain.Genre;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Getter
+@RequiredArgsConstructor
 public class UserGenre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

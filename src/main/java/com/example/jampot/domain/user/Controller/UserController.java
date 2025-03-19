@@ -3,14 +3,18 @@ package com.example.jampot.domain.user.Controller;
 import com.example.jampot.domain.user.dto.request.MypageEditRequest;
 import com.example.jampot.domain.user.dto.request.UserJoinRequest;
 import com.example.jampot.domain.user.dto.response.MypageResponse;
-import com.example.jampot.domain.user.dto.response.UserProfileUploadResponse;
+import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
+import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
 import com.example.jampot.domain.user.service.UserService;
 import com.example.jampot.global.util.JWTUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +29,9 @@ public class UserController {
     private final JWTUtil jwtUtil;
     private final UserService userService;
 
+    @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<?> completeJoin (@RequestBody UserJoinRequest userJoinRequest, HttpServletResponse response){
+    public ResponseEntity<?> completeJoin (@RequestBody @Valid UserJoinRequest userJoinRequest, HttpServletResponse response){
         try{
             List<String> jwts = userService.joinUser(userJoinRequest);
 
@@ -51,47 +56,37 @@ public class UserController {
     }
 
 
+    @Operation(summary = "마이페이지 보기")
     @GetMapping("/mypage")
-    public ResponseEntity<MypageResponse> getMyInfo(HttpServletRequest request){
-
+    public ResponseEntity<MypageResponse> getMyInfo(){
         MypageResponse mypageResponse = userService.getUserMypageInfo();
         return ResponseEntity.ok().body(mypageResponse);
     }
 
-    private String getJwtFromCookies(HttpServletRequest request){
-        if (request.getCookies() != null){
-            for (Cookie cookie : request.getCookies()){
-                if(cookie.getName().equals("AccessToken")){
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
 
-    /*
+
     //TODO(마이페이지 수정)
-    public ResponseEntity<Void> editMypageInfo(HttpServletRequest request, MypageEditRequest mypageEditRequest){
-        String token = getJwtFromCookies(request);
-        if(token == null){}
+    @Operation(summary = "마이페이지 수정")
+    @PutMapping("/mypage/edit")
+    public ResponseEntity<Void> editMypageInfo(MypageEditRequest mypageEditRequest){
+        userService.editMypageInfo(mypageEditRequest);
+        return ResponseEntity.ok().build();
     }
 
 
-    //TODO(이미지 파일 업로드)
-    public ResponseEntity<UserProfileUploadResponse> uploadProfileImage(
-            @RequestPart MultipartFile file,
-            HttpServletRequest request){
-        String token = getJwtFromCookies(request);
-        if(token == null){
-            return ResponseEntity.status(401).build();
-        }
-        String providerAndId = jwtUtil.getProviderAndId(token);
-
-        var response = userService.uploadProfileImage(file,providerAndId);
-        return ResponseEntity.ok().body(response);
+    @Operation(summary = "프로필 이미지 업로드", description = "마이페이지에서 파일을 업로드하고 저장하기 전에 요청보내야함.")
+    @PostMapping(value = "/upload-profile-img", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserProfileImgUploadResponse> uploadProfileImage(
+            @RequestPart MultipartFile file) throws Exception {
+        var response = userService.uploadProfileImage(file);
+        return ResponseEntity.ok(response);
     }
-    //TODO 음성 파일 s3 업로드
 
-     */
-
+    @Operation(summary = "프로필 음성 업로드", description = "마이페이지에서 파일을 업로드하고 저장하기 전에 요청보내야함.")
+    @PostMapping(value = "/upload-profile-audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserProfileAudioUploadResponse> uploadProfileAudio(
+            @RequestPart MultipartFile file){
+        var response = userService.uploadProfileAudio(file);
+        return ResponseEntity.ok(response);
+    }
 }

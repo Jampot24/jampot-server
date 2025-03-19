@@ -17,7 +17,6 @@ public class AuthUtil {
     private final UserRepository userRepository;
 
     public User getLoggedInUser(){
-
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         String[] parts = providerAndId.split("_");
         Provider provider = Provider.fromString(valueOf(parts[0]));
