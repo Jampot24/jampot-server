@@ -44,7 +44,7 @@ public class KakaoResponse implements OAuth2Response {
             // Base64 디코딩 후 JSON 파싱
             String payload = new String(Base64.getUrlDecoder().decode(tokenParts[1]));
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> payloadData = objectMapper.readValue(payload, Map.class);
+            Map payloadData = objectMapper.readValue(payload, Map.class);
 
             if (!payloadData.containsKey("sub")) {
                 throw new IllegalArgumentException("Missing 'sub' field in ID Token");
