@@ -55,7 +55,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 
         //TODO(로그인 완료 후 리다이렉트 주소 수정)
-        response.sendRedirect("http://localhost:3000");
+        response.sendRedirect("https://localhost:3000");
     }
 
     private Cookie createCookie(String key, String value, int maxAge) {
