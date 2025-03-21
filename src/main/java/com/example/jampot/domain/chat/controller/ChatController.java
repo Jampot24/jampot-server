@@ -11,11 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/chat")
 public class ChatController {
-
+/*
     @MessageMapping("/send")
     @SendTo("/subscribr/chat")
     public ChatMessageResponse sendMessage(@RequestParam(ChatMessageRequest request) {
         chatService.doSomething(request);
         return new ChatMessageResponse(re);
     }
+
+ */
 }
