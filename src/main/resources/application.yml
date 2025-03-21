@@ -24,6 +24,7 @@ spring:
 cookie:
   secure: "${COOKIE_SECURE}"
   samesite: "${COOKIE_SAMESITE}"
+  redirectUrl: "${COOKIE_REDIRECT_URL}"
 
 swagger:
   authorizationUrl: "${SWAGGER_AUTHORIZATION_URL}"

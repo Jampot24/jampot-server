@@ -14,6 +14,9 @@ public class CookieProperties {
     @Value("${cookie.samesite}")
     private String cookieSameSite;
 
+    @Value("${cookie.redirectUrl}")
+    private String cookieRedirectUrl;
+
     @Value("${swagger.authorizationUrl}")
     private String swaggerAuthorizationUrl;
 
