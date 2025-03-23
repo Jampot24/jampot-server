@@ -3,6 +3,7 @@ package com.example.jampot.domain.user.Controller;
 import com.example.jampot.domain.user.dto.request.MypageEditRequest;
 import com.example.jampot.domain.user.dto.request.UserJoinRequest;
 import com.example.jampot.domain.user.dto.response.MypageResponse;
+import com.example.jampot.domain.user.dto.response.UserJoinResponse;
 import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
 import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
 import com.example.jampot.domain.user.service.UserService;
@@ -31,7 +32,7 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<?> completeJoin (@RequestBody @Valid UserJoinRequest userJoinRequest, HttpServletResponse response){
+    public ResponseEntity<UserJoinResponse> completeJoin (@RequestBody @Valid UserJoinRequest userJoinRequest, HttpServletResponse response){
         try{
             List<String> jwts = userService.joinUser(userJoinRequest);
 
@@ -49,9 +50,9 @@ public class UserController {
             response.addCookie(accessCookie);
             response.addCookie(refreshCookie);
 
-            return ResponseEntity.ok().body("회원가입 완료 및 JWT 발급");
+            return ResponseEntity.ok().body(new UserJoinResponse("회원가입 완료 및 JWT 발급"));
         }catch(IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(new UserJoinResponse(e.getMessage()));
         }
     }
 
@@ -68,7 +69,7 @@ public class UserController {
     //TODO(마이페이지 수정)
     @Operation(summary = "마이페이지 수정")
     @PutMapping("/mypage/edit")
-    public ResponseEntity<Void> editMypageInfo(MypageEditRequest mypageEditRequest){
+    public ResponseEntity<Void> editMypageInfo(@RequestBody MypageEditRequest mypageEditRequest){
         userService.editMypageInfo(mypageEditRequest);
         return ResponseEntity.ok().build();
     }
