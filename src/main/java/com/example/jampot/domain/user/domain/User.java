@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.List;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "users_id")
@@ -44,7 +48,7 @@ public class User extends BaseEntity {
     @Column
     private Boolean isPublic;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserSession> userSessionList = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -103,8 +107,8 @@ public class User extends BaseEntity {
         if (isPublic != null) this.isPublic = isPublic;
 
         // 기존 세션 및 장르 업데이트 (전체 삭제 후 재추가)
-        updateSessions(selectedSessions);
-        updateGenres(selectedGenres);
+        if(selectedSessions!=null) this.updateSessions(selectedSessions);
+        if(selectedGenres!=null) this.updateGenres(selectedGenres);
     }
 
     public void updateGenres(List<Genre> selectedGenres) {
@@ -119,7 +123,7 @@ public class User extends BaseEntity {
 
     public void updateSessions(List<Session> selectedSessions) {
         //기존 장르 삭제 (orphanRemoval=true 덕분에 자동으로 DB에서 삭제됨)
-        userSessionList.clear();
+        userGenreList.clear();
 
         // 새로 받은 장르 목록으로 UserGenre 객체 생성
         for (Session session : selectedSessions) {

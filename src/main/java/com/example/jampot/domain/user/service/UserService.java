@@ -71,7 +71,6 @@ public class UserService {
         List<Session> selectedSessions = sessionRepository.findByNameIn(userJoinRequest.sessionList());
         List<Genre> selectedGenres = genreRepository.findByNameIn(userJoinRequest.genreList());
 
-
         //신규 가입 회원 저장
         User newUser = User.createUser(provider, providerId, Role.USER, userJoinRequest.nickname(),
                                         selectedSessions, selectedGenres, userJoinRequest.isPublic());
@@ -145,6 +144,7 @@ public class UserService {
                 mypageEditRequest.calenderServiceAgreement(),  // 캘린더 동의는 따로 받지 않으므로 null 유지
                 mypageEditRequest.isPublic()
         );
+
 
     }
     @Transactional
