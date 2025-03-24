@@ -15,10 +15,14 @@ import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadRespons
 import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
 import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.domain.user.vo.Provider;
+import com.example.jampot.global.properties.CookieProperties;
 import com.example.jampot.global.util.AuthUtil;
 import com.example.jampot.global.util.JWTUtil;
 import com.example.jampot.global.util.ProfileAudioUtil;
 import com.example.jampot.global.util.ProfileImageUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +56,10 @@ public class UserService {
     private final ProfileAudioUtil profileAudioUtil;
 
     private static Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final CookieProperties cookieProperties;
 
     @Transactional
-    public List<String> joinUser( UserJoinRequest userJoinRequest){
+    public void joinUser( UserJoinRequest userJoinRequest, HttpServletResponse httpServletResponse) {
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         String[] parts = providerAndId.split("_");
         Provider provider = Provider.fromString(valueOf(parts[0]));
@@ -77,28 +82,25 @@ public class UserService {
 
         userRepository.save(newUser);
 
-        List<String> jwts =  new ArrayList<>();
 
-        //JWT 발급 (회원가입 후 바로 로그인 상태 유지)
-        String accessToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
-        String refreshToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
-        jwts.add(accessToken); jwts.add(refreshToken);
+        jwtUpdate(httpServletResponse, newUser, providerAndId);
 
-        //contextholder에 저장
-        // 사용자 정보를 담은 DTO 생성
-        UserLoginResponse userLoginResponse = new UserLoginResponse();
-        userLoginResponse.setProviderAndId(providerAndId);
-        userLoginResponse.setRole("USER");
-
-        //UserDetails에 회원 정보 객체 담기
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userLoginResponse);
-        //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
-        //세션에 사용자 정보 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        return jwts;
     }
+
+    @Transactional
+    public void logoutUser(HttpServletResponse response){
+        cookieInvalid(response);
+    }
+
+    @Transactional
+    public void deleteUser(HttpServletResponse response){
+        User user = authUtil.getLoggedInUser();
+        userRepository.delete(user);
+        cookieInvalid(response);
+    }
+
+
+
     @Transactional
     public MypageResponse getUserMypageInfo() {
         User user = authUtil.getLoggedInUser();
@@ -172,7 +174,6 @@ public class UserService {
     }
 
 
-
     private String generateProfileFileName(String providerAndId) {
         try{
             var md = MessageDigest.getInstance("SHA-256");
@@ -182,6 +183,57 @@ public class UserService {
             throw new RuntimeException(e);
         }
 
+    }
+    //소셜 로그인(jwt 발급)
+    private void jwtUpdate(HttpServletResponse response,User newUser, String providerAndId){
+
+        //JWT 발급 (회원가입 후 바로 로그인 상태 유지)
+        String accessToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
+        String refreshToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
+
+        //contextholder에 저장
+        // 사용자 정보를 담은 DTO 생성
+        UserLoginResponse userLoginResponse = new UserLoginResponse();
+        userLoginResponse.setProviderAndId(providerAndId);
+        userLoginResponse.setRole("USER");
+
+        //UserDetails에 회원 정보 객체 담기
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userLoginResponse);
+        //스프링 시큐리티 인증 토큰 생성
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        //세션에 사용자 정보 등록
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+
+        //쿠키 생성
+        Cookie accessCookie = new Cookie("AccessToken", accessToken);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(60 * 60 * 5); //5시간
+
+        Cookie refreshCookie = new Cookie("RefreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(60 * 60 * 24); //하루
+
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+    }
+
+    //쿠키 삭제(로그아웃, 회원 탈퇴)
+    private void cookieInvalid(HttpServletResponse response){
+        Cookie accessTokenCookie = new Cookie("AccessToken", null);
+        accessTokenCookie.setMaxAge(0);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setSecure(cookieProperties.getCookieSecure());
+
+        Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setSecure(cookieProperties.getCookieSecure());
+
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
     }
 
 }
