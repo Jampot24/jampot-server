@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 
 
 @Component
@@ -53,9 +54,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.setHeader("isNewUser", isNewUser.toString()); //신규 회원 여부
 
-
-        //TODO(로그인 완료 후 리다이렉트 주소 수정)
-        response.sendRedirect(cookieProperties.getCookieRedirectUrl());
+        if(Objects.equals(role, "USER")) response.sendRedirect(cookieProperties.getLoginUserRedirectUrl());
+        else if(Objects.equals(role, "GUEST")) response.sendRedirect(cookieProperties.getLoginGuestRedirectUrl());
     }
 
     private Cookie createCookie(String key, String value, int maxAge) {

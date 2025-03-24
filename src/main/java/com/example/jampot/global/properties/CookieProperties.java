@@ -14,12 +14,16 @@ public class CookieProperties {
     @Value("${cookie.samesite}")
     private String cookieSameSite;
 
-    @Value("${cookie.redirectUrl}")
-    private String cookieRedirectUrl;
+    @Value("${cookie.login-guest-redirectUrl}")
+    private String loginGuestRedirectUrl;
+
+    @Value("${cookie.login-user-redirectUrl}")
+    private String loginUserRedirectUrl;
 
     @Value("${swagger.authorizationUrl}")
     private String swaggerAuthorizationUrl;
 
     @Value("${swagger.tokenUrl}")
     private String swaggerTokenUrl;
+
 }

@@ -1,11 +1,9 @@
 package com.example.jampot.domain.user.Controller;
 
+import com.amazonaws.Response;
 import com.example.jampot.domain.user.dto.request.MypageEditRequest;
 import com.example.jampot.domain.user.dto.request.UserJoinRequest;
-import com.example.jampot.domain.user.dto.response.MypageResponse;
-import com.example.jampot.domain.user.dto.response.UserJoinResponse;
-import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
-import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
+import com.example.jampot.domain.user.dto.response.*;
 import com.example.jampot.domain.user.service.UserService;
 import com.example.jampot.global.util.JWTUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,26 +32,26 @@ public class UserController {
     @PostMapping("/join")
     public ResponseEntity<UserJoinResponse> completeJoin (@RequestBody @Valid UserJoinRequest userJoinRequest, HttpServletResponse response){
         try{
-            List<String> jwts = userService.joinUser(userJoinRequest);
-
-            //쿠키 생성
-            Cookie accessCookie = new Cookie("AccessToken", jwts.get(0));
-            accessCookie.setHttpOnly(true);
-            accessCookie.setPath("/");
-            accessCookie.setMaxAge(60 * 60 * 5);
-
-            Cookie refreshCookie = new Cookie("RefreshToken", jwts.get(1));
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setPath("/");
-            refreshCookie.setMaxAge(60 * 60 * 24);
-
-            response.addCookie(accessCookie);
-            response.addCookie(refreshCookie);
+            userService.joinUser(userJoinRequest, response);
 
             return ResponseEntity.ok().body(new UserJoinResponse("회원가입 완료 및 JWT 발급"));
         }catch(IllegalStateException e){
             return ResponseEntity.badRequest().body(new UserJoinResponse(e.getMessage()));
         }
+    }
+
+    @Operation(summary = "로그아웃", description = "토큰 무효화")
+    @PostMapping("/logout")
+    public ResponseEntity<UserLogoutResponse> userLogout(HttpServletResponse response){
+        userService.logoutUser(response);
+        return ResponseEntity.ok().body(new UserLogoutResponse("로그아웃 완료 및 JWT 무효화"));
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "DB에서 회원 정보 삭제, 토큰 무효화")
+    @DeleteMapping("/delete")
+    public ResponseEntity<UserDeleteResponse> userDelete (HttpServletResponse response){
+        userService.deleteUser(response);
+        return ResponseEntity.ok().body(new UserDeleteResponse("회원 탈퇴 완료 및 JWT 무효화"));
     }
 
 

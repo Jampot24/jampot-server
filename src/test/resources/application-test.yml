@@ -52,7 +52,8 @@ spring:
 cookie:
   secure: false
   samesite: Lax
-  redirectUrl: aaa
+  login-guest-redirectUrl: aaa
+  login-user-redirectUrl: aaa
 
 swagger:
   authorizationUrl: aa
