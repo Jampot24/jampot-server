@@ -10,7 +10,7 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry){
         corsRegistry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://localhost:5173", "https://jampot.co.kr", "https://jampot.co.kr/swagger-ui", "http://localhost:8080/swagger-ui", "ws://localhost:8080", "ws://jampot.co.kr")
+                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://localhost:5173", "https://jampot.co.kr", "https://jampot.co.kr/swagger-ui", "http://localhost:8080/swagger-ui", "ws://localhost:8080", "ws://jampot.co.kr", "https://localhost:4040")
                 //.allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
