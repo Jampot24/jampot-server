@@ -16,7 +16,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @RequiredArgsConstructor
 @EnableMongoAuditing
 @EnableMongoRepositories(
-        basePackages = "com.example.jampot.domain.chat.privateChat.mongodbRepository", // MongoDB 전용 Repository 패키지
+        basePackages = "com.example.jampot.domain.chat.privateChat.mongodbRepository",// MongoDB 전용 Repository 패키지
         mongoTemplateRef = "mongoTemplate"
 )
 public class MongoConfig {
@@ -29,7 +29,7 @@ public class MongoConfig {
     }
 
     @Bean
-    public MongoTemplate mongoTemplate() {
-        return new MongoTemplate(mongoDatabaseFactory());
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
+        return new MongoTemplate(mongoDatabaseFactory);
     }
 }
