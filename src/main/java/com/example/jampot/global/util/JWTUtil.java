@@ -68,5 +68,4 @@ public class JWTUtil {
                 .signWith(secretKey)
                 .compact();
     }
-
 }

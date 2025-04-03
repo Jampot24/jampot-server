@@ -84,7 +84,7 @@ public class UserController {
     @Operation(summary = "프로필 음성 업로드", description = "마이페이지에서 파일을 업로드하고 저장하기 전에 요청보내야함.")
     @PostMapping(value = "/upload-profile-audio", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserProfileAudioUploadResponse> uploadProfileAudio(
-            @RequestPart MultipartFile file){
+            @RequestPart MultipartFile file) throws Exception{
         var response = userService.uploadProfileAudio(file);
         return ResponseEntity.ok(response);
     }

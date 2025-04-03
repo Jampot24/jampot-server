@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.util.Optional;
 
 //리소스 서버에서 받은 유저 정보를 프론트에 전달
 @Service
@@ -49,15 +50,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             String providerID = oAuth2Response.getProviderId();
 
             String userName = provider + "_" + providerID;
-            User existData = userRepository.findByProviderAndProviderId(provider, providerID);
+            Optional<User> existData = userRepository.findByProviderAndProviderId(provider, providerID);
             UserLoginResponse userLoginResponse = new UserLoginResponse();
 
-            //기존 회원이 아닌경우
-            userLoginResponse.setIsNewUser(existData == null);
 
-
+            userLoginResponse.setIsNewUser(existData.isEmpty());
             userLoginResponse.setProviderAndId(userName);
-            String role = (existData == null)? "GUEST" : existData.getRole().toString();
+            String role = (existData.isEmpty())? "GUEST" : existData.get().getRole().toString();
             logger.info(role);
             userLoginResponse.setRole(role);
 

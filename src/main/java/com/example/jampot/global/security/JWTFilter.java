@@ -16,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 public class JWTFilter extends OncePerRequestFilter {
@@ -36,7 +35,6 @@ public class JWTFilter extends OncePerRequestFilter {
         // 특정 경로에서는 JWT 검증을 건너뜀
         String requestURI = request.getRequestURI();
 
-        //requestURI.startsWith("/favicon.ico"
         if (requestURI.startsWith("/oauth2") || requestURI.startsWith("/login")) {
             filterChain.doFilter(request, response);
             return;

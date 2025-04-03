@@ -9,10 +9,12 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQLDialect
-
+  main:
+    allow-bean-definition-overriding: true
 
   profiles:
     include:
+      - mongodb
       - rds
       - oauth2
       - s3
@@ -39,3 +41,6 @@ logging:
     org.springframework.security.oauth2.client: DEBUG
     org.springframework.security.oauth2.core: DEBUG
     org.springframework.security.web.authentication: DEBUG
+    org.springframework.messaging: TRACE
+    org.springframework.web.socket: TRACE
+    org.springframework.web.servlet: TRACE

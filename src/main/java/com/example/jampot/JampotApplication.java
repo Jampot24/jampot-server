@@ -8,6 +8,7 @@ public class JampotApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(JampotApplication.class, args);
+
     }
 
 }

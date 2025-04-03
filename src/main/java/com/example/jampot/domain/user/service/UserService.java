@@ -65,7 +65,7 @@ public class UserService {
         Provider provider = Provider.fromString(valueOf(parts[0]));
         String providerId = parts[1];
 
-        if(userRepository.findByProviderAndProviderId(provider, providerId) != null){//기존 회원인 경우
+        if(!userRepository.findByProviderAndProviderId(provider, providerId).isEmpty()){//기존 회원인 경우
             throw new IllegalStateException("이미 가입된 회원입니다");
         }
 
@@ -162,7 +162,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserProfileAudioUploadResponse uploadProfileAudio(MultipartFile file) {
+    public UserProfileAudioUploadResponse uploadProfileAudio(MultipartFile file) throws Exception {
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         try{
             String fileName = generateProfileFileName(providerAndId);
