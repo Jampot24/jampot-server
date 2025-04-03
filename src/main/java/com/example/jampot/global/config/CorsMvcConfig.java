@@ -10,7 +10,7 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry corsRegistry){
         corsRegistry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://jampot.co.kr", "https://jampot.co.kr/swagger-ui", "http://localhost:8080/swagger-ui", "ws://localhost:8080", "ws://jampot.co.kr")  // 모든 Origin 허용 (특히 Swagger 테스트용)
+                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://localhost:5173", "https://jampot.co.kr", "https://jampot.co.kr/swagger-ui", "http://localhost:8080/swagger-ui", "ws://localhost:8080", "ws://jampot.co.kr")
                 //.allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
