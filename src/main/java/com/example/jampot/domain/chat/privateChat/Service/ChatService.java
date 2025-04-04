@@ -165,10 +165,10 @@ public class ChatService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("유효하지 않은 채팅방입니다."));
 
-        logger.info(String.valueOf(chatRoomSessionManager.getConnectedUserCount()));
+        logger.info(String.valueOf(chatRoomSessionManager.getConnectedUserCount(chatRoomId)));
 
         //상대방이 채팅방에 접속중인인지 확인
-        boolean read = (chatRoomSessionManager.getConnectedUserCount() == 2);
+        boolean read = (chatRoomSessionManager.getConnectedUserCount(chatRoomId) == 2);
 
         //메시지 저장
         ChatMessage chatMessage = ChatMessage.create(chatRoom.getId(), sender.getId(), receiver.getId(), content, read);
