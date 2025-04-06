@@ -11,6 +11,7 @@ import com.example.jampot.domain.user.dto.request.MypageEditRequest;
 import com.example.jampot.domain.user.dto.request.UserJoinRequest;
 import com.example.jampot.domain.user.domain.User;
 import com.example.jampot.domain.user.dto.response.MypageResponse;
+import com.example.jampot.domain.user.dto.response.MypageTargetResponse;
 import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
 import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
 import com.example.jampot.domain.user.repository.UserRepository;
@@ -112,9 +113,29 @@ public class UserService {
                 .map(userGenre -> userGenre.getGenre().getName())
                 .toList();
 
-        return new MypageResponse(user.getNickName(), user.getSelfIntroduction(), user.getProfileImgUrl(), user.getAudioFileUrl(), user.getIsPublic(), sessionList, genreList);
+        return new MypageResponse(user.getNickName(), user.getSelfIntroduction(), user.getProfileImgUrl(), user.getAudioFileUrl(), user.getIsPublic(), user.getCalenderServiceAgreement(), sessionList, genreList);
     }
 
+
+    @Transactional
+    public MypageTargetResponse getTargetMypageInfo(Long targetUserId) {
+        User targetUser = userRepository.findById(targetUserId).orElse(null);
+
+        if(targetUser == null){
+            throw new RuntimeException("상대방이 존재하지 않습니다.");
+        }
+        if(!targetUser.getIsPublic()){
+            throw new RuntimeException("비공개 계정입니다.");
+        }
+        List<String> sessionList = targetUser.getUserSessionList().stream()
+                .map(userSession -> userSession.getSession().getName())
+                .toList();
+        List<String> genreList = targetUser.getUserGenreList().stream()
+                .map(userGenre -> userGenre.getGenre().getName())
+                .toList();
+
+        return new MypageTargetResponse(targetUser.getNickName(), targetUser.getSelfIntroduction(), targetUser.getProfileImgUrl(), targetUser.getAudioFileUrl(), sessionList, genreList);
+    }
 
 
     @Transactional

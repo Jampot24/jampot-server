@@ -12,6 +12,7 @@ public record MypageResponse (
     String selfIntroduction,
     String profileImgUrl,
     String audioFileUrl,
+    Boolean calenderServiceAgreement,
     Boolean isPublic,
     List<String> sessionList,
     List<String> genreList

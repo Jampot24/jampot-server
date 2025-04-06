@@ -87,7 +87,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/oauth2/**","/login/**").permitAll()
                         .requestMatchers("/user/join").hasRole("GUEST")//jwt claim의 role 값과 비교
-                        .requestMatchers("/user/**","/private-chat/**", "/ws-chat").hasRole( "USER")
+                        .requestMatchers("/user/**","/private-chat/**", "/ws-chat","/search/users/**","/like/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

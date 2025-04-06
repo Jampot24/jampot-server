@@ -5,6 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableJpaRepositories(basePackages = {"com.example.jampot.domain.chat.privateChat.repository","com.example.jampot.domain.common.repository","com.example.jampot.domain.user","com.example.jampot.domain.playRoom" } )
+@EnableJpaRepositories(basePackages = {
+        "com.example.jampot.domain.chat.privateChat.repository",
+        "com.example.jampot.domain.common.repository",
+        "com.example.jampot.domain.user",
+        "com.example.jampot.domain.playRoom" } )
 public class JpaConfig {
 }

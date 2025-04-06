@@ -62,15 +62,22 @@ public class UserController {
         return ResponseEntity.ok().body(mypageResponse);
     }
 
+    @Operation(summary="타인의 프로필 보기")
+    @GetMapping("/mypage/{userId}")
+    public ResponseEntity<MypageTargetResponse> getTargetInfo(@PathVariable("userId") Long userId){
+        MypageTargetResponse mypageTargetResponse = userService.getTargetMypageInfo(userId);
+        return ResponseEntity.ok().body(mypageTargetResponse);
+    }
 
 
-    //TODO(마이페이지 수정)
+
     @Operation(summary = "마이페이지 수정")
     @PutMapping("/mypage/edit")
     public ResponseEntity<Void> editMypageInfo(@RequestBody MypageEditRequest mypageEditRequest){
         userService.editMypageInfo(mypageEditRequest);
         return ResponseEntity.ok().build();
     }
+
 
 
     @Operation(summary = "프로필 이미지 업로드", description = "마이페이지에서 파일을 업로드하고 저장하기 전에 요청보내야함.")
@@ -88,4 +95,6 @@ public class UserController {
         var response = userService.uploadProfileAudio(file);
         return ResponseEntity.ok(response);
     }
+
+
 }
