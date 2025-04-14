@@ -140,8 +140,7 @@ public class ChatService {
                     chatMessage.getSenderId(),
                     chatMessage.getReceiverId(),
                     chatMessage.getContent(),
-                    chatMessage.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                    chatMessage.isRead()
+                    chatMessage.getCreateDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             );
         }).collect(Collectors.toList());
         return new ChatRoomResponse(user.getNickName(), user.getProfileImgUrl(), targetuser.getNickName(), targetuser.getProfileImgUrl(), chatList);
@@ -177,14 +176,19 @@ public class ChatService {
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
         String formattedTime = chatMessage.getCreateDate().format(timeFormatter);
 
-        ChatMessageResponse response = new ChatMessageResponse(sender.getId(), content, formattedTime, read);
+        ChatMessageResponse response = new ChatMessageResponse(sender.getId(), content, formattedTime);
 
         messagingTemplate.convertAndSend("/topic/" + chatRoomId, response);
     }
 
     @Transactional
-    public void markMessagesAsRead(Long chatRoomId) {
-        User user = authUtil.getLoggedInUser();
+    public void markMessagesAsRead(Long chatRoomId, String providerAndId) {
+        String[] parts = providerAndId.split("_");
+        Provider provider = Provider.fromString(valueOf(parts[0]));
+        String providerId = parts[1];
+
+        User user = userRepository.findByProviderAndProviderId(provider, providerId).orElseThrow(null);
+
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
 
@@ -192,7 +196,7 @@ public class ChatService {
         List<ChatMessage> unreadMessages = chatMessageRepository.findUnreadMessages(chatRoom.getId(), user.getId());
         unreadMessages.forEach(ChatMessage::markAsRead);
         chatMessageRepository.saveAll(unreadMessages);
-
+        /*
         // 읽음 처리된 메시지들을 그대로 전송
         List<ChatMessageResponse> responseList = unreadMessages.stream()
                 .map(chatMessage -> new ChatMessageResponse(
@@ -205,5 +209,6 @@ public class ChatService {
 
 
         messagingTemplate.convertAndSend("/topic/" + chatRoomId,responseList);
+        */
     }
 }

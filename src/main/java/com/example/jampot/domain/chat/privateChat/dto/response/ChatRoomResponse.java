@@ -13,8 +13,7 @@ public record ChatRoomResponse(
             Long senderId,   // 송신자 ID
             Long receiverId,
             String content, // 메시지 내용
-            String date, // 메시지 전송 시간
-            boolean read // 읽음 여부
+            String date // 메시지 전송 시간
     ){
 
     }

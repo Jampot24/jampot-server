@@ -22,7 +22,6 @@ import com.example.jampot.global.util.JWTUtil;
 import com.example.jampot.global.util.ProfileAudioUtil;
 import com.example.jampot.global.util.ProfileImageUtil;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -37,7 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -209,8 +207,8 @@ public class UserService {
     private void jwtUpdate(HttpServletResponse response,User newUser, String providerAndId){
 
         //JWT 발급 (회원가입 후 바로 로그인 상태 유지)
-        String accessToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
-        String refreshToken = jwtUtil.createJwt(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
+        String accessToken = jwtUtil.createAccessToken(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
+        String refreshToken = jwtUtil.createAccessToken(newUser.getProvider()+"_"+newUser.getProviderId(), "USER");
 
         //contextholder에 저장
         // 사용자 정보를 담은 DTO 생성

@@ -4,6 +4,7 @@ import com.example.jampot.domain.chat.privateChat.Service.ChatService;
 import com.example.jampot.domain.chat.privateChat.dto.request.ChatMessageRequest;
 import com.example.jampot.domain.chat.privateChat.dto.response.ChatRoomListResponse;
 import com.example.jampot.domain.chat.privateChat.dto.response.ChatRoomResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -48,12 +49,6 @@ public class ChatController {
         return ResponseEntity.ok(chatRoomResponse);
     }
 
-   @Operation(summary = "채팅 읽음 처리", description = "웹소켓 연결에 성공하면 안읽은 메시지를 모두 읽음처리하고 상대방에게 알림")
-   @PostMapping("/chat-room/{roomId}/read")
-   public ResponseEntity<Void> markMessageAsRead(@PathVariable  Long roomId){
-       chatService.markMessagesAsRead(roomId);
-       return ResponseEntity.ok().build();
-   }
 
     @MessageMapping("/send/{chatRoomId}")
     public void receiveMessage(@DestinationVariable Long chatRoomId,

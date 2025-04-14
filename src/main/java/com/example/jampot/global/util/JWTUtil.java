@@ -49,7 +49,7 @@ public class JWTUtil {
         }
     }
 
-    public String createJwt(String providerAndId, String role){
+    public String createAccessToken(String providerAndId, String role){
         return Jwts.builder()
                 .subject(providerAndId) //provider_provider_ID
                 .claim("role", "ROLE_" + role)

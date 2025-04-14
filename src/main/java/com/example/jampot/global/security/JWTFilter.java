@@ -2,14 +2,12 @@ package com.example.jampot.global.security;
 
 import com.example.jampot.domain.auth.dto.response.CustomOAuth2User;
 import com.example.jampot.domain.auth.dto.response.UserLoginResponse;
-import com.example.jampot.global.properties.CookieProperties;
 import com.example.jampot.global.util.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tomcat.util.http.CookieProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,10 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
+
 public class JWTFilter extends OncePerRequestFilter {
     private static  final Logger logger = LoggerFactory.getLogger(JWTFilter.class);
     private final JWTUtil jwtUtil;
-    private static CookieProperties cookieProperties;
 
     public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -58,7 +56,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         //AccessToken이 만료되었는지 확인
-        if (accessToken == null || jwtUtil.isExpired(accessToken)) {
+        if (accessToken == null || !jwtUtil.isValid(accessToken)) {
 
             // 리프레시 토큰도 없는 경우 에러 응답
             if (refreshToken != null && jwtUtil.isValid(refreshToken)) {
@@ -68,7 +66,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
                 // 새로운 액세스 토큰을 쿠키에 담아서 클라이언트에 전달
                 Cookie newAccessTokenCookie = new Cookie("AccessToken", accessToken);
-                newAccessTokenCookie.setMaxAge(60 * 60 * 24 * 5); // 5일
+                newAccessTokenCookie.setMaxAge(60 * 30); // 30분
                 newAccessTokenCookie.setSecure(true);
                 newAccessTokenCookie.setPath("/");
                 newAccessTokenCookie.setHttpOnly(true);
@@ -96,7 +94,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRole(refreshToken);
 
         // 새로운 Access Token 생성
-        return jwtUtil.createJwt(providerAndId, role.split("_")[1]);
+        return jwtUtil.createAccessToken(providerAndId, role.split("_")[1]);
     }
 
     private void updateSecurityContext(String accessToken){

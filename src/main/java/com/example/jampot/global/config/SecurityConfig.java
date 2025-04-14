@@ -72,7 +72,7 @@ public class SecurityConfig {
 
         //HTTP Basic 인증 방식 disable
         http.
-                httpBasic((auth) -> auth.disable()) ;
+                httpBasic((auth) -> auth.disable());
 
         http
 

@@ -1,10 +1,8 @@
 package com.example.jampot.domain.user.dto.response;
 
-import com.example.jampot.domain.common.vo.Role;
-import com.example.jampot.domain.user.vo.Provider;
 
 import java.util.List;
-import java.util.Optional;
+
 
 public record MypageResponse (
 
