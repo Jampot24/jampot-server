@@ -2,7 +2,7 @@ package com.example.jampot.domain.user.dto.response;
 
 import java.util.List;
 
-public record UserSearchResponse(
+public record SearchUserResponse(
     List<TargetUserProfile> targetUserProfileList
 ) {
     public record TargetUserProfile(
@@ -11,6 +11,6 @@ public record UserSearchResponse(
             String selfIntroduction,
             String profileImgUrl,
             List<String> sessionList,
-            boolean isToLike
+            boolean isLiked
     ){}
 }

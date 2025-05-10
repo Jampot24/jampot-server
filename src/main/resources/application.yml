@@ -18,6 +18,7 @@ spring:
       - rds
       - oauth2
       - s3
+      - redis
 
   jwt:
     secret: "${JWT_SECRET}"
