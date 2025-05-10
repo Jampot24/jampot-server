@@ -1,6 +1,5 @@
 package com.example.jampot.domain.user.domain;
 
-import com.example.jampot.domain.common.domain.Genre;
 import com.example.jampot.domain.common.domain.Session;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
 @Entity
 @Getter

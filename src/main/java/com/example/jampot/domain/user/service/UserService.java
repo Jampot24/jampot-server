@@ -12,8 +12,8 @@ import com.example.jampot.domain.user.dto.request.UserJoinRequest;
 import com.example.jampot.domain.user.domain.User;
 import com.example.jampot.domain.user.dto.response.MypageResponse;
 import com.example.jampot.domain.user.dto.response.MypageTargetResponse;
-import com.example.jampot.domain.user.dto.response.UserProfileAudioUploadResponse;
-import com.example.jampot.domain.user.dto.response.UserProfileImgUploadResponse;
+import com.example.jampot.domain.user.dto.response.UploadUserProfileAudioResponse;
+import com.example.jampot.domain.user.dto.response.UploadUserProfileImgResponse;
 import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.domain.user.vo.Provider;
 import com.example.jampot.global.properties.CookieProperties;
@@ -142,11 +142,12 @@ public class UserService {
         User loggedInUser = authUtil.getLoggedInUser();
 
         if(mypageEditRequest.nickName() != null){
-            Optional<User> extistingUser = userRepository.findByNickName(mypageEditRequest.nickName());
+            Optional<User> existingUser = userRepository.findByNickName(mypageEditRequest.nickName());
 
-            if(extistingUser.isPresent() && !extistingUser.get().equals(loggedInUser)){
+            if(existingUser.isPresent() && !existingUser.get().equals(loggedInUser)){
                 throw new IllegalStateException("이미 사용 중인 닉네임입니다.");
             }
+
         }
 
         // 새로운 장르 추가
@@ -169,24 +170,24 @@ public class UserService {
 
     }
     @Transactional
-    public UserProfileImgUploadResponse uploadProfileImage(MultipartFile file) throws Exception {
+    public UploadUserProfileImgResponse uploadProfileImage(MultipartFile file) throws Exception {
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             String fileName = generateProfileFileName(providerAndId);
             String profileImageUrl = profileImageUtil.uploadImageFile(file, fileName);
-            return new UserProfileImgUploadResponse(profileImageUrl);
+            return new UploadUserProfileImgResponse(profileImageUrl);
         }catch (Exception e){
             throw new RuntimeException();
         }
     }
 
     @Transactional
-    public UserProfileAudioUploadResponse uploadProfileAudio(MultipartFile file) throws Exception {
+    public UploadUserProfileAudioResponse uploadProfileAudio(MultipartFile file) throws Exception {
         String providerAndId = SecurityContextHolder.getContext().getAuthentication().getName();
         try{
             String fileName = generateProfileFileName(providerAndId);
             String profileImageUrl = profileAudioUtil.uploadAudioFile(file, fileName);
-            return new UserProfileAudioUploadResponse(profileImageUrl);
+            return new UploadUserProfileAudioResponse(profileImageUrl);
         }catch (Exception e){
             throw  new RuntimeException();
         }

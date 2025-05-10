@@ -1,7 +1,7 @@
 package com.example.jampot.domain.user.service;
 
 import com.example.jampot.domain.user.domain.User;
-import com.example.jampot.domain.user.dto.response.UserSearchResponse;
+import com.example.jampot.domain.user.dto.response.SearchUserResponse;
 import com.example.jampot.domain.user.repository.UserLikeRepository;
 import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.global.util.AuthUtil;
@@ -13,18 +13,18 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserSearchService {
+public class SearchUserService {
     private final UserLikeRepository userLikeRepository;
     private final UserRepository userRepository;
     private final AuthUtil authUtil;
 
 
     @Transactional(readOnly = true)
-    public UserSearchResponse searchUsersByCondition(String nickname, List<String> sessions, List<String> genres) {
+    public SearchUserResponse searchUsersByCondition(String nickname, List<String> sessions, List<String> genres) {
         User user = authUtil.getLoggedInUser();
         List<User> users = userRepository.searchByAllConditions(nickname, sessions, genres);
 
-        List<UserSearchResponse.TargetUserProfile> targetUserProfileList = users.stream()
+        List<SearchUserResponse.TargetUserProfile> targetUserProfileList = users.stream()
                 .filter(targetUser -> !targetUser.getId().equals(user.getId()))
                 .filter(User::getIsPublic)
                 .map(targetUser -> {
@@ -35,7 +35,7 @@ public class UserSearchService {
 
                     boolean isToLike = userLikeRepository.existsByFromUserAndToUser(user, targetUser);
 
-                    return new UserSearchResponse.TargetUserProfile(
+                    return new SearchUserResponse.TargetUserProfile(
                             targetUser.getId(),
                             targetUser.getNickName(),
                             targetUser.getSelfIntroduction().substring(0,Math.min(targetUser.getSelfIntroduction().length(), 20)),
@@ -44,16 +44,16 @@ public class UserSearchService {
                             isToLike
                     );
         }).toList();
-        return new UserSearchResponse(targetUserProfileList);
+        return new SearchUserResponse(targetUserProfileList);
     }
 
     @Transactional(readOnly = true)
-    public UserSearchResponse searchUsersByLiked() {
+    public SearchUserResponse searchUsersByLiked() {
         User user = authUtil.getLoggedInUser();
 
         List<User> toLikeUsers = userLikeRepository.findToUsersByFromUser(user);
 
-        List<UserSearchResponse.TargetUserProfile> targetUserProfileList = toLikeUsers.stream()
+        List<SearchUserResponse.TargetUserProfile> targetUserProfileList = toLikeUsers.stream()
                 .filter(User::getIsPublic)
                 .map(targetUser -> {
             List<String> sessionList = targetUser.getUserSessionList().stream()
@@ -62,7 +62,7 @@ public class UserSearchService {
                     .toList();
 
 
-            return new UserSearchResponse.TargetUserProfile(
+            return new SearchUserResponse.TargetUserProfile(
                     targetUser.getId(),
                     targetUser.getNickName(),
                     targetUser.getSelfIntroduction().substring(0,Math.min(targetUser.getSelfIntroduction().length(), 20)),
@@ -71,7 +71,7 @@ public class UserSearchService {
                     true
             );
         }).toList();
-        return new UserSearchResponse(targetUserProfileList);
+        return new SearchUserResponse(targetUserProfileList);
 
     }
 }

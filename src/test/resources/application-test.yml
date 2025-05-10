@@ -1,4 +1,4 @@
-spring:
+spring:spring:
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
@@ -8,6 +8,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/jampot
+
+    redis:
+      host: aa
+      port: aa
 
   jpa:
     hibernate:

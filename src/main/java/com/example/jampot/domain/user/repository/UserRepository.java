@@ -5,6 +5,7 @@ import com.example.jampot.domain.user.vo.Provider;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
@@ -12,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
 
     Optional<User> findByNickName(@NotEmpty String nickname);
 
+    List<User> findByNickNameIn(List<String> nickNames);
 }

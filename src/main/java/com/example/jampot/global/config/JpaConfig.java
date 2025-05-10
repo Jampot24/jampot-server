@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "com.example.jampot.domain.chat.privateChat.repository",
         "com.example.jampot.domain.common.repository",
         "com.example.jampot.domain.user",
-        "com.example.jampot.domain.playRoom" } )
+        "com.example.jampot.domain.playRoom",
+        "com.example.jampot.domain.schedule"} )
 public class JpaConfig {
 }

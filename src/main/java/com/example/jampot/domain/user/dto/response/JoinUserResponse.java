@@ -1,6 +1,6 @@
 package com.example.jampot.domain.user.dto.response;
 
-public record UserJoinResponse(
+public record JoinUserResponse(
         String message
 ) {
 }
