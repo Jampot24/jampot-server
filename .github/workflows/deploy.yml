@@ -7,6 +7,11 @@ jobs:
   build_application:
     name: build application and make jar file
     runs-on: ubuntu-22.04
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
