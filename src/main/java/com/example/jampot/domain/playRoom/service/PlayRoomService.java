@@ -107,36 +107,41 @@ public class PlayRoomService{
 
         // 세션 처리 (null-safe)
         List<CreatePlayRoomRequest.SessionMaxPair> requestSessionPairs =
-                Optional.ofNullable(request.sessionMaxPairs()).orElse(List.of());
+                request.sessionMaxPairs();  // null일 수 있음
 
-        List<PlayRoom.SessionMaxPair> sessionMaxPairs = requestSessionPairs.stream()
-                .map(dto -> {
-                    Session session = sessionRepository.findByName(dto.session())
-                            .orElseThrow(() -> new IllegalArgumentException(
-                                    dto.session() + " 존재하지 않는 세션입니다."));
-                    return new PlayRoom.SessionMaxPair(session, dto.maxParticipants());
-                })
-                .toList();
+        List<PlayRoom.SessionMaxPair> sessionMaxPairs = null;
+        Map<String, Integer> sessionMap = null;
 
-        // Redis: 현재 접속 중인 인원 수 조회
-        Map<String, Integer> currentCounts = redisSessionService.getSessionState(playRoomId).stream()
-                .collect(Collectors.toMap(SessionState::sessionName, SessionState::count));
+        if (requestSessionPairs != null) {
+            // Redis: 현재 접속 중인 인원 수 조회
+            Map<String, Integer> currentCounts = redisSessionService.getSessionState(playRoomId).stream()
+                    .collect(Collectors.toMap(SessionState::sessionName, SessionState::count));
 
-        // 현재 인원보다 적은 값으로 설정하려는 경우 예외 처리
-        for (CreatePlayRoomRequest.SessionMaxPair pair : requestSessionPairs) {
-            int currentCount = currentCounts.getOrDefault(pair.session(), 0);
-            if (pair.maxParticipants() < currentCount) {
-                throw new IllegalArgumentException(String.format(
-                        "세션 [%s]에는 이미 %d명이 접속 중입니다. 최대 인원을 %d명 이하로 설정할 수 없습니다.",
-                        pair.session(), currentCount, pair.maxParticipants()));
+            for (CreatePlayRoomRequest.SessionMaxPair pair : requestSessionPairs) {
+                int currentCount = currentCounts.getOrDefault(pair.session(), 0);
+                if (pair.maxParticipants() < currentCount) {
+                    throw new IllegalArgumentException(String.format(
+                            "세션 [%s]에는 이미 %d명이 접속 중입니다. 최대 인원을 %d명 이하로 설정할 수 없습니다.",
+                            pair.session(), currentCount, pair.maxParticipants()));
+                }
             }
+
+            sessionMaxPairs = requestSessionPairs.stream()
+                    .map(dto -> {
+                        Session session = sessionRepository.findByName(dto.session())
+                                .orElseThrow(() -> new IllegalArgumentException(dto.session() + " 존재하지 않는 세션입니다."));
+                        return new PlayRoom.SessionMaxPair(session, dto.maxParticipants());
+                    })
+                    .toList();
+
+            sessionMap = requestSessionPairs.stream()
+                    .collect(Collectors.toMap(CreatePlayRoomRequest.SessionMaxPair::session,
+                            CreatePlayRoomRequest.SessionMaxPair::maxParticipants));
         }
 
-        Map<String, Integer> sessionMap = request.sessionMaxPairs().stream()
-                .collect(Collectors.toMap(CreatePlayRoomRequest.SessionMaxPair::session,
-                        CreatePlayRoomRequest.SessionMaxPair::maxParticipants));
-
-        redisSessionService.updateSessionMax(playRoom.getId(), sessionMap);
+        if (sessionMap != null) {
+            redisSessionService.updateSessionMax(playRoom.getId(), sessionMap);
+        }
 
 
         playRoom.updatePlayRoom(

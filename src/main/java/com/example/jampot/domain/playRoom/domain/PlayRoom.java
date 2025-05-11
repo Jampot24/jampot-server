@@ -101,7 +101,7 @@ public class PlayRoom {
         if (audiencePW != null) this.audiencePW = audiencePW;
 
         // 세션과 장르 업데이트
-        if (!sessionMaxPairs.isEmpty()) updateSessions(sessionMaxPairs);
+        if (sessionMaxPairs!=null) updateSessions(sessionMaxPairs);
         if (!genres.isEmpty()) updateGenres(genres);
     }
 

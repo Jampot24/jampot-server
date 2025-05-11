@@ -20,7 +20,7 @@ public class SearchUserController {
 
     private final SearchUserService userSearchService;
 
-    @Operation(summary = "닉네임, 세션, 장르 검색")
+    @Operation(summary = "닉네임, 세션, 장르 검색", description = "검색 조건(닉네임, 세션, 장르), 파라미터가 없는 경우 모든 사용자 반환")
     @GetMapping("/condition")
     public ResponseEntity<SearchUserResponse> searchUsers(
             @RequestParam(required = false) String nickname,

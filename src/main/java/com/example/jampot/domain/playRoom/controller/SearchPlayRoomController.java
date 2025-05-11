@@ -20,7 +20,7 @@ import java.util.List;
 public class SearchPlayRoomController {
     private final SearchPlayRoomService searchPlayRoomService;
 
-    @Operation(summary = "합주실 검색", description = "연주자 잠금 여부,잔여 세션, 장르 검색")
+    @Operation(summary = "합주실 검색", description = "검색 조건(연주자 잠금 여부, 잔여 세션, 장르), 파라미터가 없는 경우 전체 합주실 반환")
     @GetMapping("/condition")
     public ResponseEntity<SearchPlayRoomResponse> searchPlayRooms(
             @RequestParam(required = false) Boolean isPlayerLocked,
