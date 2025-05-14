@@ -46,6 +46,9 @@ public class PlayRoom {
     @OneToMany(mappedBy = "playRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> scheduleList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "playRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlayRoomLike> playRoomLikeList = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id")
     private User creator;

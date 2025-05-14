@@ -1,5 +1,9 @@
 package com.example.jampot.domain.playRoom.service;
 
+import com.example.jampot.domain.playRoom.dto.request.EnterPlayRoomAsAudienceRequest;
+import com.example.jampot.domain.playRoom.dto.request.EnterPlayRoomAsPlayerRequest;
+import com.example.jampot.domain.playRoom.dto.response.*;
+import com.example.jampot.domain.playRoom.repository.PlayRoomLikeRepository;
 import com.example.jampot.domain.schedule.dto.response.ScheduleSimpleInfo;
 import com.example.jampot.domain.schedule.service.ScheduleService;
 import com.example.jampot.domain.common.domain.Genre;
@@ -9,12 +13,9 @@ import com.example.jampot.domain.common.repository.SessionRepository;
 import com.example.jampot.domain.playRoom.domain.PlayRoom;
 import com.example.jampot.domain.playRoom.dto.request.CreatePlayRoomRequest;
 import com.example.jampot.domain.playRoom.dto.request.EditPlayRoomRequest;
-import com.example.jampot.domain.playRoom.dto.response.CreatePlayRoomResponse;
-import com.example.jampot.domain.playRoom.dto.response.PlayRoomInfoResponse;
-import com.example.jampot.domain.playRoom.dto.response.SessionState;
-import com.example.jampot.domain.playRoom.dto.response.UploadPlayRoomImgResponse;
 import com.example.jampot.domain.playRoom.repository.PlayRoomRepository;
 import com.example.jampot.domain.user.domain.User;
+import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.global.util.AuthUtil;
 import com.example.jampot.global.util.PlayRoomImageUtil;
 import jakarta.validation.Valid;
@@ -28,10 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +43,8 @@ public class PlayRoomService{
     private final GenreRepository genreRepository;
     private final SessionRepository sessionRepository;
     private final PlayRoomImageUtil playRoomImageUtil;
+    private final UserRepository userRepository;
+    private final PlayRoomLikeRepository playRoomLikeRepository;
 
 
     @Transactional
@@ -198,6 +198,7 @@ public class PlayRoomService{
             throw new IllegalStateException("현재 연주 중인 합주실을 삭제할 수 없습니다.");
         }
 
+        redisSessionService.deleteRoom(playRoomId);
         playRoomRepository.delete(playRoom);
     }
 
@@ -217,7 +218,7 @@ public class PlayRoomService{
         int month = LocalDate.now().getMonthValue();
         List<ScheduleSimpleInfo> schedules = scheduleService.getMonthlySchedule(playRoomId, month);
 
-        return new PlayRoomInfoResponse(playRoom.getName(), playRoom.getDescription(), genres, sessionStates, playRoom.getImageUrl(), schedules);
+        return new PlayRoomInfoResponse(playRoom.getName(), playRoom.getDescription(), playRoom.getIsPlayerLocked(), playRoom.getIsAudienceLocked(), genres, sessionStates, playRoom.getImageUrl(), schedules);
     }
 
     @Transactional
@@ -248,5 +249,67 @@ public class PlayRoomService{
         }catch(NoSuchAlgorithmException e){
             throw new RuntimeException(e);
         }
+    }
+
+
+    public AvailableSessionListResponse getAvailableSessions(Long playRoomId) {
+        return new AvailableSessionListResponse(redisSessionService.getAvailableSession(playRoomId));
+
+    }
+
+    public EnterPlayRoomResponse enterAsPlayer(Long playRoomId, EnterPlayRoomAsPlayerRequest request) {
+        User user = authUtil.getLoggedInUser();
+
+        Optional<PlayRoom> playRoom = playRoomRepository.findById(playRoomId);
+        if(playRoom.isEmpty())
+            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.");
+
+        if(playRoom.get().getIsPlayerLocked())
+            if(!Objects.equals(playRoom.get().getPlayerPW(), request.playerPW()))
+                return new EnterPlayRoomResponse(false, "연주자 입장 번호가 일치하지 않습니다.");
+
+        return redisSessionService.tryEnterAsPlayer(playRoomId, user.getId(), request.session());
+    }
+
+    public void existAsPlayer(Long playRoomId) {
+        User user = authUtil.getLoggedInUser();
+        redisSessionService.leaveAsPlayer(playRoomId, user.getId());
+    }
+
+    public EnterPlayRoomResponse enterAsAudience(Long playRoomId, EnterPlayRoomAsAudienceRequest request) {
+        Optional<PlayRoom> playRoom = playRoomRepository.findById(playRoomId);
+        User user = authUtil.getLoggedInUser();
+
+        if(playRoom.isEmpty())
+            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.");
+
+        if(playRoom.get().getIsPlayerLocked())
+            if(!Objects.equals(playRoom.get().getPlayerPW(), request.audiencePW()))
+                return new EnterPlayRoomResponse(false, "관객 입장 번호가 일치하지 않습니다.");
+
+        return redisSessionService.tryEnterAsAudience(playRoomId, user.getId());
+    }
+
+    public void existAsAudience(Long playRoomId) {
+        User user = authUtil.getLoggedInUser();
+        redisSessionService.leaveAsAudience(playRoomId, user.getId());
+    }
+
+
+    @Transactional(readOnly = true)
+    public PlayRoomStatusResponse getPlayRoomStatus(Long playRoomId) {
+        List<PlayRoomSessionUserStatus> sessionUsers = redisSessionService.getParticipants(playRoomId);
+
+        List<PlayRoomStatusResponse.ParticipantInfo> participants = sessionUsers.stream()
+                .map(su -> userRepository.findById(su.userId())
+                        .map(user -> new PlayRoomStatusResponse.ParticipantInfo(
+                                user.getNickName(),
+                                su.session(),
+                                user.getProfileImgUrl()))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .toList();
+
+        return new PlayRoomStatusResponse(participants);
     }
 }

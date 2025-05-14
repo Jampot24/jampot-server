@@ -2,12 +2,11 @@ package com.example.jampot.domain.playRoom.controller;
 
 import com.example.jampot.domain.playRoom.dto.request.CreatePlayRoomRequest;
 import com.example.jampot.domain.playRoom.dto.request.EditPlayRoomRequest;
-import com.example.jampot.domain.playRoom.dto.response.CreatePlayRoomResponse;
-import com.example.jampot.domain.playRoom.dto.response.DeletePlayRoomResponse;
-import com.example.jampot.domain.playRoom.dto.response.PlayRoomInfoResponse;
-import com.example.jampot.domain.playRoom.dto.response.UploadPlayRoomImgResponse;
+import com.example.jampot.domain.playRoom.dto.request.EnterPlayRoomAsAudienceRequest;
+import com.example.jampot.domain.playRoom.dto.request.EnterPlayRoomAsPlayerRequest;
+import com.example.jampot.domain.playRoom.dto.response.*;
 import com.example.jampot.domain.playRoom.service.PlayRoomService;
-import com.example.jampot.domain.user.dto.response.UploadUserProfileImgResponse;
+import com.example.jampot.domain.playRoom.service.RedisSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 import static org.springframework.http.ResponseEntity.ok;
 
 @Controller
@@ -27,6 +28,7 @@ import static org.springframework.http.ResponseEntity.ok;
 public class PlayRoomController {
 
     private final PlayRoomService playRoomService;
+    private final RedisSessionService redisSessionService;
 
     @Operation(summary = "합주실 생성 API")
     @PostMapping("/create")
@@ -56,6 +58,57 @@ public class PlayRoomController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "합주실 입장 요청 전 잔여 세션 반환")
+    @PutMapping("/{playRoomId}/available-sessions")
+    public ResponseEntity<AvailableSessionListResponse> getAvailableSessions(@PathVariable Long playRoomId){
+        AvailableSessionListResponse sessions = playRoomService.getAvailableSessions(playRoomId);
+        return ResponseEntity.ok().body(sessions);
+    }
+
+    @Operation(summary = "합주실 입장 후 연주자로 참여한 사용자 정보 반환")
+    @GetMapping("/{playRoomId}/participants")
+    public ResponseEntity<PlayRoomStatusResponse> getPlayRoomStatus(
+            @PathVariable("playRoomId") Long playRoomId
+    ){
+        PlayRoomStatusResponse response = playRoomService.getPlayRoomStatus(playRoomId);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "연주자 합주실 입장 요청", description = "연주자 비밀번호, 잔여 세션 확인 & 자격을 만족하는 경우 입장 처리")
+    @PostMapping("/{playRoomId}/enter/player")
+    public ResponseEntity<EnterPlayRoomResponse> enterPlayRoom(
+            @PathVariable Long playRoomId,
+            @Valid @RequestBody EnterPlayRoomAsPlayerRequest request) {
+        EnterPlayRoomResponse response = playRoomService.enterAsPlayer(playRoomId, request);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "관객 합주실 입장 요청", description = "관객 비밀번호 확인 & 입장 처리")
+    @PostMapping("/{playRoomId}/enter/audience")
+    ResponseEntity<EnterPlayRoomResponse> enterPlayRoom(
+            @PathVariable Long playRoomId,
+            @RequestBody EnterPlayRoomAsAudienceRequest request) {
+        EnterPlayRoomResponse response = playRoomService.enterAsAudience(playRoomId, request);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "연주자 합주실 퇴장")
+    @PutMapping("/{playRoomId}/exist/player")
+    ResponseEntity<Void> existPlayRoomAsPlayer(
+            @PathVariable Long playRoomId
+    ){
+        playRoomService.existAsPlayer(playRoomId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "관중 합주실 퇴장")
+    @PutMapping("/{playRoomId}/exist/audience")
+    ResponseEntity<Void> existPlayRoomAsAudience(
+            @PathVariable Long playRoomId
+    ){
+        playRoomService.existAsAudience(playRoomId);
+        return ResponseEntity.ok().build();
+    }
 
     @Operation(summary = "대표 이미지 업로드", description = "합주실 상세 페이지에서 파일을 업로드하고 저장하기 전에 요청보내야함.")
     @PostMapping(value = "/{playRoomId}/upload-img", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

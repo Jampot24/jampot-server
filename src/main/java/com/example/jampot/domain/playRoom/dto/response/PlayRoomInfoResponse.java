@@ -8,6 +8,8 @@ import java.util.List;
 public record PlayRoomInfoResponse(
         String name,
         String description,
+        boolean isPlayerLocked,
+        boolean isAudienceLocked,
         List<String> genreList,
         //세션별 최대인원, 잔여인원 리스트. dto 생성해야함.
         List<SessionState> sessionInfoList,
