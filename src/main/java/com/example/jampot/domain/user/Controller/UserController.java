@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users") //TODO(루트 수정)
+@RequestMapping("/users")
 @Tag(name = "User", description = "사용자 관련 API")
 public class UserController {
     private final JWTUtil jwtUtil;

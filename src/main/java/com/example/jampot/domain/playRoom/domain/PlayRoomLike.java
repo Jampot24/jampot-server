@@ -16,11 +16,11 @@ public class PlayRoomLike {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "play_rooom_id")
+    @JoinColumn(name = "play_rooom_id", nullable = false)
     PlayRoom playRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "users_id", nullable = false)
     User user;
 
     @Builder(access = AccessLevel.PRIVATE)
