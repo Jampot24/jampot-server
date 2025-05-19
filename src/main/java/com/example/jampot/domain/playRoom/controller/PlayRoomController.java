@@ -52,14 +52,14 @@ public class PlayRoomController {
     }
 
     @Operation(summary = "합주실 상세보기 페이지")
-    @PutMapping("/{playRoomId}/detailInfo")
+    @GetMapping("/{playRoomId}/detailInfo")
     public ResponseEntity<PlayRoomInfoResponse> getPlayRoomInfo(@PathVariable("playRoomId") Long playRoomId) {
         PlayRoomInfoResponse response = playRoomService.getPlayRoomInfo(playRoomId);
         return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "합주실 입장 요청 전 잔여 세션 반환")
-    @PutMapping("/{playRoomId}/available-sessions")
+    @GetMapping("/{playRoomId}/available-sessions")
     public ResponseEntity<AvailableSessionListResponse> getAvailableSessions(@PathVariable Long playRoomId){
         AvailableSessionListResponse sessions = playRoomService.getAvailableSessions(playRoomId);
         return ResponseEntity.ok().body(sessions);
