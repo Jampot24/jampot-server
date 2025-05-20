@@ -19,6 +19,7 @@ import com.example.jampot.domain.user.repository.UserRepository;
 import com.example.jampot.global.util.AuthUtil;
 import com.example.jampot.global.util.PlayRoomImageUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -262,11 +263,11 @@ public class PlayRoomService{
 
         Optional<PlayRoom> playRoom = playRoomRepository.findById(playRoomId);
         if(playRoom.isEmpty())
-            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.");
+            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.",null);
 
         if(playRoom.get().getIsPlayerLocked())
             if(!Objects.equals(playRoom.get().getPlayerPW(), request.playerPW()))
-                return new EnterPlayRoomResponse(false, "연주자 입장 번호가 일치하지 않습니다.");
+                return new EnterPlayRoomResponse(false, "연주자 입장 번호가 일치하지 않습니다.",null);
 
         return redisSessionService.tryEnterAsPlayer(playRoomId, user.getId(), request.session());
     }
@@ -281,11 +282,11 @@ public class PlayRoomService{
         User user = authUtil.getLoggedInUser();
 
         if(playRoom.isEmpty())
-            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.");
+            return new EnterPlayRoomResponse(false, "합주실이 존재하지 않습니다.", null);
 
         if(playRoom.get().getIsPlayerLocked())
             if(!Objects.equals(playRoom.get().getPlayerPW(), request.audiencePW()))
-                return new EnterPlayRoomResponse(false, "관객 입장 번호가 일치하지 않습니다.");
+                return new EnterPlayRoomResponse(false, "관객 입장 번호가 일치하지 않습니다.", null);
 
         return redisSessionService.tryEnterAsAudience(playRoomId, user.getId());
     }
@@ -297,10 +298,46 @@ public class PlayRoomService{
 
 
     @Transactional(readOnly = true)
-    public PlayRoomStatusResponse getPlayRoomStatus(Long playRoomId) {
+    public PlayRoomStatusResponse getPlayRoomStatusAsAudience(Long playRoomId){
+        List<PlayRoomSessionUserStatus> sessionUsers = redisSessionService.getParticipants(playRoomId);
+        List<PlayRoomStatusResponse.ParticipantInfo> participants = buildParticipants(sessionUsers);
+        return new PlayRoomStatusResponse(participants);
+    }
+
+    @Transactional(readOnly = true)
+    public PlayRoomStatusResponse getPlayRoomStatusAsPlayer(Long playRoomId) {
+        User loggedInUser = authUtil.getLoggedInUser();
+        String loggedInUserNickName = loggedInUser.getNickName();
+
         List<PlayRoomSessionUserStatus> sessionUsers = redisSessionService.getParticipants(playRoomId);
 
-        List<PlayRoomStatusResponse.ParticipantInfo> participants = sessionUsers.stream()
+        List<PlayRoomStatusResponse.ParticipantInfo> participants = buildParticipants(sessionUsers).stream()
+                .sorted((p1, p2) -> {
+                    if(p1.nickName().equals(loggedInUserNickName)) return -1;
+                    if(p2.nickName().equals(loggedInUserNickName)) return 1;
+                    return 0;
+                })
+                .toList();
+
+        return new PlayRoomStatusResponse(participants);
+    }
+
+    @Transactional(readOnly = true)
+    public PlayRoomStatusResponse getPlayRoomStatusAsPlayerOnlyMe(Long playRoomId) {
+        User loggedInUser = authUtil.getLoggedInUser();
+        String loggedInUserNickName = loggedInUser.getNickName();
+
+        List<PlayRoomSessionUserStatus> sessionUsers = redisSessionService.getParticipants(playRoomId);
+
+        List<PlayRoomStatusResponse.ParticipantInfo> participants = buildParticipants(sessionUsers).stream()
+                .filter(p -> p.nickName().equals(loggedInUserNickName))
+                .toList();
+        return new PlayRoomStatusResponse(participants);
+    }
+
+
+    private List<PlayRoomStatusResponse.ParticipantInfo> buildParticipants(List<PlayRoomSessionUserStatus> sessionUsers) {
+        return sessionUsers.stream()
                 .map(su -> userRepository.findById(su.userId())
                         .map(user -> new PlayRoomStatusResponse.ParticipantInfo(
                                 user.getNickName(),
@@ -309,7 +346,5 @@ public class PlayRoomService{
                         .orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
-
-        return new PlayRoomStatusResponse(participants);
     }
 }
