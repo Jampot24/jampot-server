@@ -28,7 +28,6 @@ import static org.springframework.http.ResponseEntity.ok;
 public class PlayRoomController {
 
     private final PlayRoomService playRoomService;
-    private final RedisSessionService redisSessionService;
 
     @Operation(summary = "합주실 생성 API")
     @PostMapping("/create")
@@ -64,7 +63,7 @@ public class PlayRoomController {
         AvailableSessionListResponse sessions = playRoomService.getAvailableSessions(playRoomId);
         return ResponseEntity.ok().body(sessions);
     }
-
+/*
     @Operation(summary = "합주실 입장 후 연주자로 참여한 사용자 정보 반환")
     @GetMapping("/{playRoomId}/participants")
     public ResponseEntity<PlayRoomStatusResponse> getPlayRoomStatus(
@@ -73,22 +72,34 @@ public class PlayRoomController {
         PlayRoomStatusResponse response = playRoomService.getPlayRoomStatus(playRoomId);
         return ResponseEntity.ok().body(response);
     }
-
-    @Operation(summary = "연주자 합주실 입장 요청", description = "연주자 비밀번호, 잔여 세션 확인 & 자격을 만족하는 경우 입장 처리")
+*/
+    @Operation(summary = "연주자 합주실 입장 요청", description = "연주자 비밀번호, 잔여 세션 확인 후 합주실 입장")
     @PostMapping("/{playRoomId}/enter/player")
     public ResponseEntity<EnterPlayRoomResponse> enterPlayRoom(
             @PathVariable Long playRoomId,
             @Valid @RequestBody EnterPlayRoomAsPlayerRequest request) {
         EnterPlayRoomResponse response = playRoomService.enterAsPlayer(playRoomId, request);
+
+        if(response.success()){
+            PlayRoomStatusResponse status = playRoomService.getPlayRoomStatusAsPlayer(playRoomId);
+            response = new EnterPlayRoomResponse(true, null, status);
+        }
+
         return ResponseEntity.ok().body(response);
     }
 
-    @Operation(summary = "관객 합주실 입장 요청", description = "관객 비밀번호 확인 & 입장 처리")
+
+    @Operation(summary = "관객 합주실 입장 요청", description = "관객 비밀번호 확인 후 합주실 입장")
     @PostMapping("/{playRoomId}/enter/audience")
     ResponseEntity<EnterPlayRoomResponse> enterPlayRoom(
             @PathVariable Long playRoomId,
             @RequestBody EnterPlayRoomAsAudienceRequest request) {
         EnterPlayRoomResponse response = playRoomService.enterAsAudience(playRoomId, request);
+
+        if(response.success()){
+            PlayRoomStatusResponse status = playRoomService.getPlayRoomStatusAsAudience(playRoomId);
+            response = new EnterPlayRoomResponse(true, null, status);
+        }
         return ResponseEntity.ok().body(response);
     }
 

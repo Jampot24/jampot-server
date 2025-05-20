@@ -100,7 +100,7 @@ public class RedisSessionService {
     // 유저 입장 처리 (악기 선택)
     public EnterPlayRoomResponse tryEnterAsPlayer(Long playRoomId, Long userId, String session) {
         if (isUserInAnyRoom(userId)) {
-            return new EnterPlayRoomResponse(false, "이미 다른 합주실에 참여 중입니다."); // 이미 다른 합주실 세션에 참여 중
+            return new EnterPlayRoomResponse(false, "이미 다른 합주실에 참여 중입니다.", null); // 이미 다른 합주실 세션에 참여 중
         }
 
         String currentKey = roomSessionKey(playRoomId, session);
@@ -110,14 +110,14 @@ public class RedisSessionService {
         String maxVal = redisTemplate.opsForValue().get(maxKey);
 
         if (currentVal == null || maxVal == null) {
-            return new EnterPlayRoomResponse(false, "해당 악기 세션 정보를 찾을 수 없습니다.");
+            return new EnterPlayRoomResponse(false, "해당 악기 세션 정보를 찾을 수 없습니다.", null);
         }
 
         int current = Integer.parseInt(currentVal);
         int max = Integer.parseInt(maxVal);
 
         if (current >= max) {
-            return new EnterPlayRoomResponse(false, "해당 악기 세션은 정원이 초과되었습니다."); // 정원 초과
+            return new EnterPlayRoomResponse(false, "해당 악기 세션은 정원이 초과되었습니다.", null); // 정원 초과
         }
 
         // 입장 처리
@@ -128,7 +128,7 @@ public class RedisSessionService {
         redisTemplate.opsForSet().add(roomUserKey(playRoomId), userId.toString());
 
         refreshPlayRoomTTL(playRoomId);
-        return new EnterPlayRoomResponse(true, "합주실에 입장되었습니다.");
+        return new EnterPlayRoomResponse(true, "합주실에 입장되었습니다.", null);
     }
 
     // 연주자 퇴장 처리
@@ -155,14 +155,14 @@ public class RedisSessionService {
     // 관객 입장 처리
     public EnterPlayRoomResponse tryEnterAsAudience(Long playRoomId, Long userId) {
         if (isUserInAnyRoom(userId)) {
-            return new EnterPlayRoomResponse(false, "이미 다른 합주실에 참여중입니다.");
+            return new EnterPlayRoomResponse(false, "이미 다른 합주실에 참여중입니다.", null);
         }
 
         redisTemplate.opsForValue().set(userRoomKey(userId), playRoomId.toString(), TTL);
         redisTemplate.opsForSet().add(roomUserKey(playRoomId), userId.toString());
 
         refreshPlayRoomTTL(playRoomId);
-        return new EnterPlayRoomResponse(true, "합주실에 입장되었습니다.");
+        return new EnterPlayRoomResponse(true, "합주실에 입장되었습니다.", null);
     }
 
 
@@ -171,7 +171,11 @@ public class RedisSessionService {
 
         String playRoom = redisTemplate.opsForValue().get(userRoomKey(userId));
         if (playRoom==null || !playRoom.equals(playRoomId.toString())) {
-            throw new RuntimeException("연주자가 해당 합주실에 존재하지 않아 퇴장 처리가 불가능 합니다.");
+            throw new RuntimeException("해당 합주실에 참여하지 않아 퇴장 처리가 불가능 합니다.");
+        }
+        String session = redisTemplate.opsForValue().get(userSessionKey(userId));
+        if(session!=null){
+            throw new RuntimeException("해당 합주실에 연주자로 참여하고있습니다. 관중 퇴장이 아닌 연주자 퇴장으로 요청하십시오.");
         }
         redisTemplate.delete(userRoomKey(userId));
         redisTemplate.opsForSet().remove(roomUserKey(playRoomId),userId.toString());
