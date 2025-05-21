@@ -7,7 +7,6 @@ import java.util.List;
 
 public record MypageEditRequest(
 
-        @NotBlank(message = "Nickname cannot be empty or blank")
         @Size(min = 1, message = "Nickname must have at least one character")
         String nickName,
         String selfIntroduction,

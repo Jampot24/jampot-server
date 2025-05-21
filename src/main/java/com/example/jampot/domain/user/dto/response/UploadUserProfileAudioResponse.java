@@ -2,7 +2,7 @@ package com.example.jampot.domain.user.dto.response;
 
 
 
-public record UserProfileAudioUploadResponse(
+public record UploadUserProfileAudioResponse(
        String profileAudioUrl
 ) {
 }

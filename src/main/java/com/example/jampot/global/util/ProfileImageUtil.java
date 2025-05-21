@@ -15,7 +15,6 @@ public class ProfileImageUtil {
 
     private static final String bucket = "jampot-s3";
     private static final String baseUrl  = "https://jampot-s3.s3.ap-northeast-2.amazonaws.com/profile-image/";
-    private static Logger logger = LoggerFactory.getLogger(ProfileImageUtil.class);
 
     public String uploadImageFile(MultipartFile file, String fileName)throws Exception{
         ObjectMetadata metadata = new ObjectMetadata();
