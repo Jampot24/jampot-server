@@ -38,7 +38,7 @@ public class UserSearchService {
                     return new UserSearchResponse.TargetUserProfile(
                             targetUser.getId(),
                             targetUser.getNickName(),
-                            targetUser.getSelfIntroduction().substring(0,Math.min(targetUser.getSelfIntroduction().length(), 20)),
+                            targetUser.getSelfIntroduction(),
                             targetUser.getProfileImgUrl(),
                             sessionList,
                             isToLike
@@ -65,7 +65,7 @@ public class UserSearchService {
             return new UserSearchResponse.TargetUserProfile(
                     targetUser.getId(),
                     targetUser.getNickName(),
-                    targetUser.getSelfIntroduction().substring(0,Math.min(targetUser.getSelfIntroduction().length(), 20)),
+                    targetUser.getSelfIntroduction(),
                     targetUser.getProfileImgUrl(),
                     sessionList,
                     true
